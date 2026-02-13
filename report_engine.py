@@ -258,53 +258,28 @@ def generate_json_report(device_id: str, latest_session_data: dict,
 
 # --- Main Execution ---
 if __name__ == "__main__":
-    print("Starting report engine...")
-
     # --- Fetch Data from Supabase ---
-    # In a real scenario, you would filter by device_id.
-    # For now, we fetch all, and assume a "device_id" for trend analysis.
-    # IMPORTANT: Ensure your Supabase table has a 'device_id' column if you want
-    # proper multi-device trend analysis. For this prototype, I'll assume
-    # session_name contains some device-identifying info or use a placeholder.
-    
-    # Mocking device_id for demonstration
     mock_device_id = "DISPLAY_SN_ABC123"
 
+    all_calibration_sessions = []
     try:
         if SUPABASE_URL == "YOUR_SUPABASE_URL" or SUPABASE_ANON_KEY == "YOUR_SUPABASE_ANON_KEY":
-            print("Supabase credentials are placeholders. Cannot fetch real data.")
-            all_calibration_sessions = []
+            # In production, this would likely be an error or a fallback to local data
+            pass
         else:
             response = supabase.table("calibration_sessions").select("*").order("timestamp", desc=False).execute()
             all_calibration_sessions = response.data
-            print(f"Fetched {len(all_calibration_sessions)} calibration sessions.")
     except Exception as e:
-        print(f"Error fetching data from Supabase: {e}")
-        all_calibration_sessions = []
+        print(f"Error fetching data from Supabase: {e}") # Keep essential error logging
 
     if not all_calibration_sessions:
-        print("No calibration data found to generate reports.")
-        exit()
+        # In a production setup, this might trigger an alert or return an empty report
+        pass # No data found to generate reports, exit silently or log
 
     # --- Process Latest Session Data ---
     latest_session = all_calibration_sessions[-1]
-    print(f"
-Processing latest session: {latest_session.get('session_name')} on {json.loads(latest_session.get('timestamp'))}")
-
-    # For gamut coverage, we need display primaries. These aren't explicitly
-    # stored as R,G,B primaries, but are implicitly defined by the display's
-    # properties and can be influenced by the color_correction_matrix.
-    # For this example, we'll assume a set of idealized sRGB-like primaries for the display
-    # if actual primaries aren't directly available or derivable from the stored data.
-    
-    # If the CCM is stored, we *could* infer corrected primaries, but for
-    # a direct "measured RGB coordinates" to xy calculation, we need raw
-    # primary measurements or standard primary definitions.
     
     # Let's assume ideal linear sRGB primaries for the display for calculating gamut:
-    # Red: [1, 0, 0], Green: [0, 1, 0], Blue: [0, 0, 1]
-    # In a real scenario, these would come from direct measurements of display primaries
-    # (e.g., from a spectrophotometer)
     display_primaries_for_gamut = np.array([
         [1.0, 0.0, 0.0], # Red
         [0.0, 1.0, 0.0], # Green
@@ -312,31 +287,15 @@ Processing latest session: {latest_session.get('session_name')} on {json.loads(l
     ])
 
     # 1. CIE 1931 Chromaticity Calculator
-    print("
---- Running CIE 1931 Chromaticity Calculator ---")
     gamut_results = calculate_gamut_coverage(display_primaries_for_gamut)
-    print("Display Primaries (xy):
-", gamut_results['display_primaries_xy'])
-    print("Gamut Coverage:
-", gamut_results['coverage'])
 
     # 2. Trend Analysis Engine
-    print("
---- Running Trend Analysis Engine ---")
-    # Filter historical data for the specific device if 'device_id' was available.
-    # For now, using all fetched data and applying mock_device_id.
     trend_results = analyze_color_drift(mock_device_id, all_calibration_sessions)
-    print("Trend Analysis Results:
-", json.dumps(trend_results, indent=2))
 
     # 3. Report Metadata Generator
-    print("
---- Generating JSON Report ---")
     final_report = generate_json_report(mock_device_id, latest_session, gamut_results, trend_results)
     
     report_filename = "calibration_report.json"
     with open(report_filename, "w") as f:
         json.dump(final_report, f, indent=4)
-    print(f"Generated JSON report: {report_filename}")
-    print("
-Report Engine finished.")
+    # print(f"Generated JSON report: {report_filename}") # Keep this print if user wants confirmation of file creation

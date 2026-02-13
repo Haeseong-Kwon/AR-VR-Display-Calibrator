@@ -499,76 +499,38 @@ def upload_calibration_data(session_name: str, gamma_value: float, lut: np.ndarr
 
 # --- Main Execution ---
 if __name__ == "__main__":
-    print("Starting calibration engine...")
+    from datetime import datetime
 
     # --- Mock Data for Testing ---
+    # In a real application, this data would come from actual sensor measurements.
+    
     # Mock Luminance Data: Input signal (0-1) vs. measured luminance (0-1)
-    # This simulates a non-linear display response that needs gamma correction.
     mock_input_signal = np.linspace(0, 1, 100)
-    # Simulate a display that is too dark (e.g., gamma 2.5 instead of ideal 2.2)
     mock_measured_luminance = mock_input_signal**2.5 + np.random.normal(0, 0.02, 100)
-    mock_measured_luminance = np.clip(mock_measured_luminance, 0, 1) # Ensure values are within 0-1
+    mock_measured_luminance = np.clip(mock_measured_luminance, 0, 1)
     mock_luminance_data = np.vstack((mock_input_signal, mock_measured_luminance)).T
 
-    # Create a dummy checkerboard image for testing distortion mapping
-    # In a real scenario, you would have a physical image.
-    dummy_image_path = "dummy_checkerboard.png"
+    # Path to the checkerboard image for distortion mapping.
+    # IMPORTANT: Replace with the actual path to your checkerboard image.
+    checkerboard_image_path = "path/to/your/checkerboard.png" 
     checkerboard_pattern_size = (7, 6) # Inner corners
     square_physical_size = 25.0 # mm
 
-    # Generate a simple checkerboard image for testing
-    img_width, img_height = 640, 480
-    checkerboard_img = np.zeros((img_height, img_width, 3), dtype=np.uint8)
-    
-    # This is a very basic way to draw a checkerboard.
-    # For proper corner detection, a more realistic rendering might be needed or
-    # better yet, use an actual checkerboard image.
-    for i in range(checkerboard_pattern_size[1] + 2): # rows
-        for j in range(checkerboard_pattern_size[0] + 2): # cols
-            color = (255, 255, 255) if (i + j) % 2 == 0 else (0, 0, 0)
-            y1 = int(i * img_height / (checkerboard_pattern_size[1] + 2))
-            y2 = int((i + 1) * img_height / (checkerboard_pattern_size[1] + 2))
-            x1 = int(j * img_width / (checkerboard_pattern_size[0] + 2))
-            x2 = int((j + 1) * img_width / (checkerboard_pattern_size[0] + 2))
-            cv2.rectangle(checkerboard_img, (x1, y1), (x2, y2), color, -1)
-    
-    # Save the dummy image
-    cv2.imwrite(dummy_image_path, checkerboard_img)
-    print(f"Generated dummy checkerboard image: {dummy_image_path}")
-
     # --- Perform Calibration Tasks ---
-    session_name = "DisplayCalibration_2026-02-13" # Example session name
+    session_name = f"DisplayCalibration_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
 
     # 1. Color & Gamma Solver
-    print("
---- Running Color & Gamma Solver ---")
     gamma_val, lut_result = calculate_gamma_and_lut(mock_luminance_data)
-    print(f"Calculated Gamma Value: {gamma_val:.3f}")
-    # print(f"Generated LUT (first 10 values): {lut_result[:10]}")
 
-    # Mock Data for new functions
-    # Mock measured RGB for CCM
+    # Mock Data for new functions (replace with actual measurements)
     mock_measured_rgb = np.array([
         [0.1, 0.2, 0.3], [0.4, 0.5, 0.6], [0.7, 0.8, 0.9],
         [0.3, 0.1, 0.2], [0.6, 0.4, 0.5], [0.9, 0.7, 0.8]
     ])
-    # Mock target RGB for CCM (e.g., a slightly desaturated version)
     mock_target_rgb = mock_measured_rgb * 0.9
 
-    # Mock measured white RGB for AWB
-    mock_measured_white_rgb = np.array([0.9, 0.85, 0.95]) # Slightly reddish white
+    mock_measured_white_rgb = np.array([0.9, 0.85, 0.95])
 
-    # Mock spatial luminance data for Mura (x, y, luminance)
-    # Normalized coordinates (0-1)
-    # Example: a dip in luminance at the center
-    grid_points_x = np.linspace(0, 1, 5)
-    grid_points_y = np.linspace(0, 1, 5)
-    X, Y = np.meshgrid(grid_points_x, grid_points_y)
-    
-    # Simulate a non-uniformity: dimmer in the center, brighter at edges
-    simulated_luminance = 0.8 + 0.2 * (np.sin(X * np.pi) + np.sin(Y * np.pi))
-    
-    # Add some random measurements
     num_mura_measurements = 20
     mura_x = np.random.rand(num_mura_measurements)
     mura_y = np.random.rand(num_mura_measurements)
@@ -579,51 +541,30 @@ if __name__ == "__main__":
     mock_display_resolution = (1920, 1080)
 
     # 3. AI Color Matching Algorithm
-    print("
---- Running AI Color Matching Algorithm ---")
     ccm_matrix_result = calculate_color_correction_matrix(mock_measured_rgb, mock_target_rgb)
-    print("Calculated Color Correction Matrix:\n", ccm_matrix_result)
 
     # 4. Auto-White Balance (AWB)
-    print("
---- Running Auto-White Balance ---")
     awb_gains_result = calculate_awb_gains(mock_measured_white_rgb)
-    print("Calculated AWB Gains (R, G, B):\n", awb_gains_result)
 
     # 5. Mura Compensation Prototype
-    print("
---- Running Mura Compensation Prototype ---")
     mura_map_result = generate_mura_compensation_map(mock_spatial_luminance_data, mock_display_resolution)
-    print("Generated Mura Compensation Map (shape):\n", mura_map_result.shape)
-    # print("Mura Map (top-left 5x5):\n", mura_map_result[:5,:5]) # Uncomment for detailed view
 
     # 2. Distortion Mapping
-    print("
---- Running Distortion Mapping ---")
-    try:
-        camera_mat, dist_coeff = calibrate_camera(dummy_image_path, checkerboard_pattern_size, square_physical_size)
-        print("Camera Matrix:
-", camera_mat)
-        print("Distortion Coefficients:
-", dist_coeff)
-    except Exception as e:
-        print(f"Error during camera calibration: {e}")
-        camera_mat = np.array([])
-        dist_coeff = np.array([])
+    camera_mat = np.array([])
+    dist_coeff = np.array([])
+    if os.path.exists(checkerboard_image_path):
+        try:
+            camera_mat, dist_coeff = calibrate_camera(checkerboard_image_path, checkerboard_pattern_size, square_physical_size)
+        except Exception as e:
+            # Log the error, but don't stop the entire calibration process
+            print(f"Error during camera calibration with {checkerboard_image_path}: {e}")
+    else:
+        # Log a warning if the image is expected but not found
+        print(f"Warning: Checkerboard image not found at {checkerboard_image_path}. Skipping camera calibration.")
 
     # 3. Database Integration
-    print("
---- Uploading Data to Supabase ---")
     if SUPABASE_URL == "YOUR_SUPABASE_URL" or SUPABASE_ANON_KEY == "YOUR_SUPABASE_ANON_KEY":
         print("Supabase credentials are placeholders. Please update SUPABASE_URL and SUPABASE_ANON_KEY to enable database upload.")
     else:
         upload_calibration_data(session_name, gamma_val, lut_result, camera_mat, dist_coeff,
                                 ccm_matrix_result, awb_gains_result, mura_map_result)
-    
-    # Clean up dummy image
-    if os.path.exists(dummy_image_path):
-        os.remove(dummy_image_path)
-        print(f"Removed dummy checkerboard image: {dummy_image_path}")
-
-    print("
-Calibration engine finished.")
