@@ -4,13 +4,52 @@ import React, { useState } from 'react';
 import CalibrationStepper from '@/components/calibration/CalibrationStepper';
 import PatternCanvas from '@/components/calibration/PatternCanvas';
 import PatternControls from '@/components/calibration/PatternControls';
-import { Monitor, Info, ChevronRight, Save, Play } from 'lucide-react';
+import LivePreview from '@/components/calibration/LivePreview';
+import AIInsight from '@/components/calibration/AIInsight';
+import { supabase } from '@/lib/supabase';
+import { AIRecommendation } from '@/types/calibration';
+import { Monitor, Info, ChevronRight, Save, Play, SplitSquareHorizontal, Sparkles } from 'lucide-react';
 
 export default function CalibratePage() {
     const [currentStep, setCurrentStep] = useState(2);
     const [patternType, setPatternType] = useState<'grayscale' | 'colorchecker' | 'checkerboard'>('grayscale');
     const [brightness, setBrightness] = useState(100);
     const [contrast, setContrast] = useState(100);
+    const [gamma, setGamma] = useState(2.2);
+    const [temperature, setTemperature] = useState(6500);
+    const [viewMode, setViewMode] = useState<'calibrate' | 'preview'>('calibrate');
+    const [aiRecommendation, setAiRecommendation] = useState<AIRecommendation | null>(null);
+
+    // Mock AI Analysis
+    const runAIAnalysis = () => {
+        setAiRecommendation({
+            colorTemperature: 6500,
+            gamma: 2.2,
+            whiteBalance: { r: 1.0, g: 0.98, b: 0.95 },
+            deltaE: { before: 8.4, after: 1.2 },
+            description: "Corrected significant blue-tint in shadows and optimized gamma curve for OLED response time.",
+        });
+    };
+
+    // Apply AI Settings
+    const applyAIRecommendation = () => {
+        if (!aiRecommendation) return;
+        setGamma(aiRecommendation.gamma);
+        setTemperature(aiRecommendation.colorTemperature);
+        setBrightness(95); // Example optimization
+        setContrast(110); // Example optimization
+    };
+
+    // Supabase Sync (Debounced mock or real)
+    React.useEffect(() => {
+        const syncParams = async () => {
+            // In a real app, we would upsert to 'calibration_sessions' here.
+            // For now, we just log to console to simulate sync.
+            // console.log("Syncing params:", { brightness, contrast, gamma, temperature });
+        };
+        const timer = setTimeout(syncParams, 500);
+        return () => clearTimeout(timer);
+    }, [brightness, contrast, gamma, temperature]);
 
     return (
         <main className="min-h-screen bg-black text-white p-8">
@@ -38,34 +77,57 @@ export default function CalibratePage() {
             <CalibrationStepper currentStep={currentStep} />
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Left Column: Pattern Generator */}
+                {/* Left Column: Pattern Generator & Preview */}
                 <div className="lg:col-span-8 space-y-6">
                     <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-4 backdrop-blur-sm">
                         <div className="flex justify-between items-center mb-4 px-2">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">Live Output</span>
+                                <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
+                                    {viewMode === 'calibrate' ? 'Live Pattern' : 'Simulated Preview'}
+                                </span>
                             </div>
-                            <div className="flex gap-2">
-                                <span className="px-2 py-1 rounded bg-zinc-800 text-[10px] font-mono text-zinc-400">1920x1080</span>
-                                <span className="px-2 py-1 rounded bg-zinc-800 text-[10px] font-mono text-zinc-400">SRGB</span>
+                            <div className="flex gap-2 bg-zinc-900 border border-white/5 rounded-xl p-1">
+                                <button
+                                    onClick={() => setViewMode('calibrate')}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${viewMode === 'calibrate' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
+                                        }`}
+                                >
+                                    Pattern
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('preview')}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${viewMode === 'preview' ? 'bg-blue-600/20 text-blue-400' : 'text-zinc-500 hover:text-zinc-300'
+                                        }`}
+                                >
+                                    <SplitSquareHorizontal className="w-3 h-3" />
+                                    Preview
+                                </button>
                             </div>
                         </div>
 
-                        <PatternCanvas
-                            type={patternType}
-                            brightness={brightness}
-                            contrast={contrast}
-                        />
+                        {viewMode === 'calibrate' ? (
+                            <PatternCanvas
+                                type={patternType}
+                                brightness={brightness}
+                                contrast={contrast}
+                            />
+                        ) : (
+                            <LivePreview
+                                previewParams={{ brightness, contrast, gamma, temperature }}
+                            />
+                        )}
                     </div>
 
-                    <div className="bg-blue-600/10 border border-blue-500/20 rounded-2xl p-6 flex gap-4 items-start">
-                        <Info className="w-5 h-5 text-blue-400 mt-0.5" />
-                        <div>
-                            <h3 className="text-sm font-bold text-blue-100 mb-1">Calibration Tip</h3>
-                            <p className="text-xs text-blue-100/70 leading-relaxed">
-                                Ensure your ambient lighting is consistent throughout the session. For AR/VR displays, it is recommended to perform measurements in a light-controlled environment to achieve maximum accuracy.
-                            </p>
+                    <div className="flex gap-4">
+                        <div className="flex-1 bg-blue-600/10 border border-blue-500/20 rounded-2xl p-6 flex gap-4 items-start">
+                            <Info className="w-5 h-5 text-blue-400 mt-0.5" />
+                            <div>
+                                <h3 className="text-sm font-bold text-blue-100 mb-1">Calibration Tip</h3>
+                                <p className="text-xs text-blue-100/70 leading-relaxed">
+                                    Ensure your ambient lighting is consistent throughout the session. For AR/VR displays, it is recommended to perform measurements in a light-controlled environment.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -79,7 +141,26 @@ export default function CalibratePage() {
                         setBrightness={setBrightness}
                         contrast={contrast}
                         setContrast={setContrast}
+                        gamma={gamma}
+                        setGamma={setGamma}
+                        temperature={temperature}
+                        setTemperature={setTemperature}
                     />
+
+                    {!aiRecommendation ? (
+                        <button
+                            onClick={runAIAnalysis}
+                            className="w-full flex items-center justify-center gap-2 bg-zinc-900 border border-purple-500/30 hover:bg-purple-900/10 text-purple-300 rounded-xl py-4 transition-all duration-300 font-bold text-sm"
+                        >
+                            <Sparkles className="w-4 h-4" />
+                            Run AI Analysis
+                        </button>
+                    ) : (
+                        <AIInsight
+                            recommendation={aiRecommendation}
+                            onApply={applyAIRecommendation}
+                        />
+                    )}
 
                     <div className="grid grid-cols-2 gap-4">
                         <button

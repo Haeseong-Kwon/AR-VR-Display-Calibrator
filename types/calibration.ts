@@ -31,6 +31,29 @@ export interface CalibrationSession {
         cameraMatrix?: number[][];
         distCoeffs?: number[];
     };
+    // ... existing existing existing
     startedAt: string;
     completedAt?: string;
+    recommendations?: AIRecommendation;
+    previewParams?: {
+        brightness: number;
+        contrast: number;
+        gamma: number;
+        temperature: number;
+    };
+}
+
+export interface AIRecommendation {
+    colorTemperature: number;
+    gamma: number;
+    whiteBalance: {
+        r: number;
+        g: number;
+        b: number;
+    };
+    deltaE: {
+        before: number;
+        after: number;
+    };
+    description: string;
 }
