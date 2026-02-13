@@ -13,23 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Guardion | AR/VR Display Calibrator",
+  title: "Precision | AR/VR Display Calibrator",
   description: "Next-generation display correction and calibration system for high-end spatial computing devices.",
   openGraph: {
-    title: "Guardion Display Calibrator",
+    title: "Precision Display Calibrator",
     description: "Professional AI-driven display calibration for AR/VR",
     images: [
       {
         url: "https://github.com/Haeseong-Kwon/AR-VR-Display-Calibrator/raw/main/public/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Guardion Interface Preview",
+        alt: "Precision Interface Preview",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Guardion | AR/VR Display Calibrator",
+    title: "Precision | AR/VR Display Calibrator",
     description: "Professional AI-driven display calibration for AR/VR",
   },
 };

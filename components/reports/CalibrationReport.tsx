@@ -22,6 +22,12 @@ const CalibrationReport: React.FC<CalibrationReportProps> = ({
 }) => {
     const reportRef = useRef<HTMLDivElement>(null);
 
+    const [isMounted, setIsMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     const generatePDF = async () => {
         if (!reportRef.current) return;
 
@@ -107,8 +113,8 @@ const CalibrationReport: React.FC<CalibrationReportProps> = ({
                     </div>
 
                     <div className="pt-12 border-t border-zinc-800 text-[10px] text-zinc-600 flex justify-between italic">
-                        <span>Generated on {new Date().toLocaleDateString()}</span>
-                        <span>Ref: Guardion Display Calibrator Engine v1.0</span>
+                        <span>Generated on {isMounted ? new Date().toLocaleDateString() : '--'}</span>
+                        <span>Ref: Precision Display Calibrator Engine v1.0</span>
                     </div>
                 </div>
             </div>

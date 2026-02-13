@@ -117,7 +117,7 @@ export default function CalibratePage() {
                         <div className="px-2 py-0.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-[10px] uppercase tracking-widest text-blue-400 font-bold">PRO</div>
                     </h1>
                     <p className="text-zinc-500 text-sm font-medium">
-                        Next-gen AR/VR display correction system • Guardion Engine v1.0
+                        Next-gen AR/VR display correction system • Precision Engine v1.0
                     </p>
                 </div>
                 <div className="flex gap-4">
