@@ -6,9 +6,12 @@ import PatternCanvas from '@/components/calibration/PatternCanvas';
 import PatternControls from '@/components/calibration/PatternControls';
 import LivePreview from '@/components/calibration/LivePreview';
 import AIInsight from '@/components/calibration/AIInsight';
+import ProfileHistory from '@/components/calibration/ProfileHistory';
+import CalibrationReport from '@/components/reports/CalibrationReport';
+import ExportActions from '@/components/calibration/ExportActions';
 import { supabase } from '@/lib/supabase';
 import { AIRecommendation } from '@/types/calibration';
-import { Monitor, Info, ChevronRight, Save, Play, SplitSquareHorizontal, Sparkles } from 'lucide-react';
+import { Monitor, Info, ChevronRight, Save, Play, SplitSquareHorizontal, Sparkles, LayoutGrid } from 'lucide-react';
 
 export default function CalibratePage() {
     const [currentStep, setCurrentStep] = useState(2);
@@ -17,7 +20,7 @@ export default function CalibratePage() {
     const [contrast, setContrast] = useState(100);
     const [gamma, setGamma] = useState(2.2);
     const [temperature, setTemperature] = useState(6500);
-    const [viewMode, setViewMode] = useState<'calibrate' | 'preview'>('calibrate');
+    const [viewMode, setViewMode] = useState<'calibrate' | 'preview' | 'history'>('calibrate');
     const [aiRecommendation, setAiRecommendation] = useState<AIRecommendation | null>(null);
 
     // Mock AI Analysis
@@ -44,8 +47,6 @@ export default function CalibratePage() {
     React.useEffect(() => {
         const syncParams = async () => {
             // In a real app, we would upsert to 'calibration_sessions' here.
-            // For now, we just log to console to simulate sync.
-            // console.log("Syncing params:", { brightness, contrast, gamma, temperature });
         };
         const timer = setTimeout(syncParams, 500);
         return () => clearTimeout(timer);
@@ -84,7 +85,7 @@ export default function CalibratePage() {
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                                 <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-widest">
-                                    {viewMode === 'calibrate' ? 'Live Pattern' : 'Simulated Preview'}
+                                    {viewMode === 'calibrate' ? 'Live Pattern' : viewMode === 'preview' ? 'Simulated Preview' : 'Device History'}
                                 </span>
                             </div>
                             <div className="flex gap-2 bg-zinc-900 border border-white/5 rounded-xl p-1">
@@ -103,6 +104,14 @@ export default function CalibratePage() {
                                     <SplitSquareHorizontal className="w-3 h-3" />
                                     Preview
                                 </button>
+                                <button
+                                    onClick={() => setViewMode('history')}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${viewMode === 'history' ? 'bg-zinc-800 text-white shadow-lg shadow-white/5' : 'text-zinc-500 hover:text-zinc-300'
+                                        }`}
+                                >
+                                    <LayoutGrid className="w-3 h-3" />
+                                    History
+                                </button>
                             </div>
                         </div>
 
@@ -112,10 +121,12 @@ export default function CalibratePage() {
                                 brightness={brightness}
                                 contrast={contrast}
                             />
-                        ) : (
+                        ) : viewMode === 'preview' ? (
                             <LivePreview
                                 previewParams={{ brightness, contrast, gamma, temperature }}
                             />
+                        ) : (
+                            <ProfileHistory />
                         )}
                     </div>
 
@@ -129,6 +140,17 @@ export default function CalibratePage() {
                                 </p>
                             </div>
                         </div>
+                        {viewMode !== 'history' && (
+                            <div className="flex flex-col gap-2">
+                                <CalibrationReport
+                                    deviceName="Apple Vision Pro"
+                                    deltaEBefore={8.4}
+                                    deltaEAfter={aiRecommendation?.deltaE.after || 1.2}
+                                    gamma={gamma}
+                                    temperature={temperature}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -160,6 +182,10 @@ export default function CalibratePage() {
                             recommendation={aiRecommendation}
                             onApply={applyAIRecommendation}
                         />
+                    )}
+
+                    {viewMode !== 'history' && (
+                        <ExportActions deviceName="Apple Vision Pro" />
                     )}
 
                     <div className="grid grid-cols-2 gap-4">
