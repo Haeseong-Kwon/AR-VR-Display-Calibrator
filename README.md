@@ -12,14 +12,29 @@
 입력된 sRGB 또는 Adobe RGB 신호를 디바이스 독립적 공간인 CIE XYZ로 변환하기 위해 다음과 같은 선형 변환 행렬을 적용한다:
 
 $$
-\begin{bmatrix} X \\ Y \\ Z \end{bmatrix} = \begin{bmatrix} 0.4124 & 0.3576 & 0.1805 \\ 0.2126 & 0.7152 & 0.0722 \\ 0.0193 & 0.1192 & 0.9505 \end{bmatrix} \begin{bmatrix} R_{linear} \\ G_{linear} \\ B_{linear} \end{bmatrix}
+\begin{bmatrix}
+X \\
+Y \\
+Z
+\end{bmatrix}
+=
+\begin{bmatrix}
+0.4124 & 0.3576 & 0.1805 \\
+0.2126 & 0.7152 & 0.0722 \\
+0.0193 & 0.1192 & 0.9505
+\end{bmatrix}
+\begin{bmatrix}
+R_{linear} \\
+G_{linear} \\
+B_{linear}
+\end{bmatrix}
 $$
 
 ### 2.2 Color Difference Quantification
 교정 전후의 색 편차 정량화를 위해 $\Delta E^*$ (CIEDE2000) 모델을 활용하여 가시적인 색 차이를 도출한다:
 
 $$
-\Delta E_{ab}^* = \sqrt{(L_2^* - L_1^*)^2 + (a_2^* - a_1^*)^2 + (b_2^* - b_1^*)^2}
+\Delta E_{ab}^{*} = \sqrt{(L_{2}^{*} - L_{1}^{*})^{2} + (a_{2}^{*} - a_{1}^{*})^{2} + (b_{2}^{*} - b_{1}^{*})^{2}}
 $$
 
 ### 2.3 Gamma Correction & LUT Generation
