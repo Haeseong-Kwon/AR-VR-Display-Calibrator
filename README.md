@@ -39,10 +39,10 @@ B_{linear}
 $$
 
 ### 2.2 Color Difference Quantification
-교정 전후의 색 편차 정량화를 위해 $\Delta E^*$ (CIEDE2000) 모델을 활용하여 가시적인 색 차이를 도출한다:
+교정 전후의 색 편차 정량화를 위해 $\Delta E^\ast$ (CIEDE2000) 모델을 활용하여 가시적인 색 차이를 도출한다:
 
 $$
-\Delta E_{ab}^{*} = \sqrt{(L_{2}^{*} - L_{1}^{*})^{2} + (a_{2}^{*} - a_{1}^{*})^{2} + (b_{2}^{*} - b_{1}^{*})^{2}}
+\Delta E_{ab}^* = \sqrt{(L_2^* - L_1^*)^2 + (a_2^* - a_1^*)^2 + (b_2^* - b_1^*)^2}
 $$
 
 ### 2.3 Gamma Correction & LUT Generation
