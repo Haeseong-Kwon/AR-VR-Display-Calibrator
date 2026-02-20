@@ -21,19 +21,19 @@
 
 $$
 \begin{bmatrix}
-X \\
-Y \\
+X \\\\
+Y \\\\
 Z
 \end{bmatrix}
 =
 \begin{bmatrix}
-0.4124 & 0.3576 & 0.1805 \\
-0.2126 & 0.7152 & 0.0722 \\
+0.4124 & 0.3576 & 0.1805 \\\\
+0.2126 & 0.7152 & 0.0722 \\\\
 0.0193 & 0.1192 & 0.9505
 \end{bmatrix}
 \begin{bmatrix}
-R_{linear} \\
-G_{linear} \\
+R_{linear} \\\\
+G_{linear} \\\\
 B_{linear}
 \end{bmatrix}
 $$
