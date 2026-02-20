@@ -1,5 +1,13 @@
 # 차세대 디스플레이 광학 교정 리포트: AI 기반 AR/VR 마이크로 디스플레이 통합 보정 시스템
 
+<div align="center">
+  <img src="ar_vr_calibrator_demo.gif" width="85%" alt="AR/VR Display Calibrator Demo" />
+  <br>
+  <p align="center" style="color: #888; font-style: italic; font-size: 0.9em;">
+    AR/VR 마이크로 디스플레이의 광학적 왜곡 및 색수차 정밀 교정 프로세스 시연 화면입니다. 실시간 패턴 분석을 통해 디스플레이 유닛별 최적화된 보정 파라미터를 산출하고, 렌즈 왜곡 역보정을 위한 프로파일(LUT) 생성 과정을 지원합니다.
+  </p>
+</div>
+
 ## 1. Research Motivation & Challenges
 차세대 공간 컴퓨팅 디바이스의 핵심 부품인 Micro-OLED 및 Micro-LED 디스플레이는 초고해상도 밀도를 달성하는 과정에서 서브픽셀 단위의 휘도 불균일성(Luminance Non-uniformity)과 미세한 색 편차(Color Deviation) 문제를 수반한다. 특히 AR/VR 환경에서는 디스플레이의 광학적 특성이 배율 렌즈를 통해 사용자에게 직접 투사되므로, 미세한 결함도 몰입감을 저해하는 무아레(Mura) 현상으로 전개된다.
 
